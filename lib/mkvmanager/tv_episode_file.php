@@ -6,9 +6,11 @@
  * @copyright 2011
  *
  * @property-read bool $hasSubtitleFile
+ * @property-read bool $hasSubtitleFiles
  * @property-read TVEpisodeDownloadedFile $downloadedFile filename of the originally downloaded file (release)
  * @property-read string $path the file's full path
  * @property-read string $subtitleFile the file's subtitle, if it exists
+ * @property-read array $subtitleFiles the file's subtitles, if it exist
  * @property-read double $fileSize the episode file's size
  */
 class TVEpisodeFile
@@ -70,6 +72,12 @@ class TVEpisodeFile
                 return ( file_exists( "$basedirAndFile.srt" ) || file_exists( "$basedirAndFile.ass" ) );
                 break;
 
+            case 'hasSubtitleFiles':
+                $basedirAndFile = "{$tvShowPath}/{$this->showName}/{$this->fullname}";
+                $subtitles = glob( $basedirAndFile . "*.{ass,srt}", GLOB_BRACE );
+                return count( $subtitles ) > 0;
+                break;
+
             case 'subtitleFile':
                 $basedirAndFile = "{$tvShowPath}/{$this->showName}/{$this->fullname}";
                 if ( file_exists( "$basedirAndFile.ass" ) )
@@ -78,6 +86,24 @@ class TVEpisodeFile
                 {
                     return "$basedirAndFile.srt";
                 }
+                else
+                {
+                    throw new Exception("No subtitle found for $this->filename" );
+                }
+                break;
+
+            case 'subtitleFiles':
+                $basedirAndFile = "{$tvShowPath}/{$this->showName}/{$this->fullname}";
+                $subtitleFiles = array();
+                $assQualityFiles = glob( $basedirAndFile . "*.ass" );
+                $srtQualityFiles = glob( $basedirAndFile . "*.srt" );
+                if( count( $assQualityFiles ) > 0 )
+                    $subtitleFiles['ass'] = $assQualityFiles;
+                if( count( $srtQualityFiles ) > 0 )
+                    $subtitleFiles['srt'] = $srtQualityFiles;
+
+                if( count( $subtitleFiles ) > 0 )
+                    return $subtitleFiles;
                 else
                 {
                     throw new Exception("No subtitle found for $this->filename" );

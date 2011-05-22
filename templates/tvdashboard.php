@@ -314,7 +314,7 @@ $(document).ready(function() {
             <ul class="icon listEpisodes">
             <? $displayed = 0; ?>
             <? foreach( $episodeFiles as $episodeFile ): ?>
-                <li id="li<?=ucfirst( anchorLink( $episodeFile->filename ) )?>"class="<?=( $episodeFile->hasSubtitleFile ? 'subtitle' : 'nosubtitle' )?>">
+                <li id="li<?=ucfirst( anchorLink( $episodeFile->filename ) )?>"class="<?=( $episodeFile->hasSubtitleFiles ? 'subtitle' : 'nosubtitle' )?>">
                     Episode <a class="episode"
                         title="Downloaded release: <?=htmlentities( (string)$episodeFile->downloadedFile )?> (<?=$episodeFile->downloadedFile->releaseGroup ? $episodeFile->downloadedFile->releaseGroup : 'none'?>)"
                         href="/ajax/searchsubtitles/<?=rawurlencode( $episodeFile->filename )?>/<?=$episodeFile->downloadedFile != '' ? rawurlencode( $episodeFile->downloadedFile ) : 'none' ?>">
