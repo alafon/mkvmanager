@@ -21,6 +21,11 @@ List
   - every 10 seconds: new items + delete done ones if applicable
 * Subtitles: store when a subtitle doesn't exist, and check in the background
 * Add an animation when the popup closes upon successful download
+* Requirements check view
+  - sqlite and co
+  - curl
+  - existance of the tmp folders
+  - right permissions on these folders
 
 Done
 ====
