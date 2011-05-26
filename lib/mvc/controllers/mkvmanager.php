@@ -224,5 +224,13 @@ class mmMkvManagerController extends ezcMvcController
         $result->variables += mmApp::doTrailer( $this->AllocineId );
         return $result;
     }
+
+    public function doTVManager()
+    {
+        $result = new ezcMvcResult;
+        $result->variables['page_title'] = "TV Manager :: MKV Manager";
+        $result->variables += mmApp::doTVDashboard();
+        return $result;
+    }
 }
 ?>
