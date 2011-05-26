@@ -26,6 +26,7 @@ List
   - curl
   - existance of the tmp folders
   - right permissions on these folders
+  - short_open_tag = On
 
 Done
 ====
