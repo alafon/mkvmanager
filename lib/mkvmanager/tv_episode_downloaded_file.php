@@ -20,8 +20,15 @@ class TVEpisodeDownloadedFile
      */
     public function __construct( $filename )
     {
-        $pathinfo = pathinfo( $filename );
         $this->filename = $filename;
+        if ( $filename == "" )
+        {
+            $this->isValid = false;
+            $this->releaseGroup = "";
+            return;
+        }
+
+        $pathinfo = pathinfo( $filename );
 
         if ( preg_match( "/-(.*)\.[a-z]{3}$/", $filename, $m ) )
             $this->releaseGroup = strtolower( $m[1] );
@@ -50,6 +57,8 @@ class TVEpisodeDownloadedFile
      */
     private function releaseGroupWithAliases()
     {
+        if( !$this->isValid )
+            return array();
         switch ( $this->releaseGroup )
         {
             case 'dimension':
@@ -76,6 +85,8 @@ class TVEpisodeDownloadedFile
      * @var string
      */
     public $releaseGroup;
+
+    public $isValid;
 }
 
 ?>
