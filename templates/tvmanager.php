@@ -76,9 +76,9 @@ div.showDetails table td.episodeName {
                 <tr>
                     <?/* @var $episodeFile TVEpisodeFile */?>
                     <td class="episodeID"><?=$episodeFile->seasonNumber?>x<?=$episodeFile->episodeNumber?></td>
-                    <td class="episodeName"><a class="episode"
-                            title="Downloaded release: <?=htmlentities( (string)$episodeFile->downloadedFile )?> (<?=$episodeFile->downloadedFile->releaseGroup ? $episodeFile->downloadedFile->releaseGroup : 'none'?>)"
-                            href="/ajax/searchsubtitles/<?=rawurlencode( $episodeFile->filename )?>/<?=$episodeFile->downloadedFile != '' ? rawurlencode( $episodeFile->downloadedFile ) : 'none' ?>">
+                    <td class="episodeName">
+                    <a class="episode"
+                            href="/ajax/searchsubtitles/<?=rawurlencode( $episodeFile->filename )?>/<?//=$episodeFile->downloadedFile != '' ? rawurlencode( $episodeFile->downloadedFile ) : 'none' ?>">
                             <?=$episodeFile->episodeName?></a>
                     </td>
                     <td>
