@@ -97,10 +97,21 @@ class TVEpisodeFile
                 $subtitleFiles = array();
                 $assQualityFiles = glob( $basedirAndFile . "*.ass" );
                 $srtQualityFiles = glob( $basedirAndFile . "*.srt" );
+
+                $identifySubtitles = function( &$value ) {
+                    $value = mmMkvManagerSubtitles::identify( $value );
+                };
+
                 if( count( $assQualityFiles ) > 0 )
+                {
+                    array_walk( $assQualityFiles );
                     $subtitleFiles['ass'] = $assQualityFiles;
+                }
                 if( count( $srtQualityFiles ) > 0 )
+                {
+                    array_walk( $srtQualityFiles );
                     $subtitleFiles['srt'] = $srtQualityFiles;
+                }
 
                 if( count( $subtitleFiles ) > 0 )
                     return $subtitleFiles;

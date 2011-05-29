@@ -82,6 +82,18 @@ class mmMkvManagerSubtitles
 
         return $list;
     }
+
+    public static function identify( $filename )
+    {
+        if ( preg_match( '/^(.*?)(\.([a-zA-Z]+))?\.([a-zA-Z]+)$/', $filename, $matches ) )
+        {
+            return array( 'episode_name' => $matches[1],
+                          'sub_language' => $matches[3] == "" ? null : $matches[3],
+                          'sub_type' => $matches[4] );
+        }
+        else
+            return false;
+    }
 }
 
 ?>
