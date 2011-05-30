@@ -58,15 +58,63 @@ class mmMkvManagerController extends ezcMvcController
         if ( $this->image == '' )
             throw new ezcBaseValueException( 'image', $this->image );
 
+        $resize = false;
+        if ( strpos( $this->image, "@" ) !== false )
+        {
+            list( $image, $params ) = explode( "@", $this->image );
+
+            // need to be checked
+            // if not checked then it will throw a notice that will break the image
+            if( strpos( $params, "x" ) !== false )
+            {
+                list( $newWidth, $newHeight ) = explode( "x", $params);
+            }
+            else
+            {
+                $newWidth = $params;
+                $newHeight = null;
+            }
+
+            if( !is_null( $newWidth ) or !is_null( $newHeight ) )
+                $resize = true;
+        }
+        else
+        {
+            $image = $this->image;
+        }
+
         $tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
-        $file = "{$tvShowPath}/" . str_replace( ':', '/', $this->image );
+        $file = "{$tvShowPath}/" . str_replace( ':', '/', $image );
         // @todo Throw a dedicated extension
         if ( !file_exists( $file ) )
             throw new ezcBaseValueException( 'image', $file );
 
         $finfo = new finfo( FILEINFO_MIME );
         header( "Content-Type: " . $finfo->file( $file ) );
-        readfile( $file );
+        if ( $resize )
+        {
+            list( $oldWidth, $oldHeight ) = getimagesize( $file );
+            if ( is_null( $newHeight ) )
+            {
+                $ratio = $newWidth / $oldWidth;
+                $newHeight = round($ratio * $oldHeight);
+            }
+            elseif( is_null( $newWidth ) )
+            {
+                $ratio = $newHeight / $oldHeight;
+                $newWidth = round($ratio * $oldWidth);
+            }
+
+            $thumb = imagecreatetruecolor($newWidth, $newHeight);
+            $source = imagecreatefromjpeg($file);
+            imagecopyresized($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $oldWidth, $oldHeight);
+            imagejpeg($thumb);
+        }
+        else
+        {
+            readfile( $file );
+        }
+
         exit;
 
         return $result;
