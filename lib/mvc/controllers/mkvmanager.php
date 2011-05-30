@@ -58,15 +58,56 @@ class mmMkvManagerController extends ezcMvcController
         if ( $this->image == '' )
             throw new ezcBaseValueException( 'image', $this->image );
 
+        $resize = false;
+        if ( strpos( $this->image, "@" ) !== false )
+        {
+            list( $image, $params ) = explode( "@", $this->image );
+            list( $newWidth, $newHeight ) = explode( "x", $params);
+
+            // $newHeight = null if $params = "123"
+            // $newWidth = "" if $params = "x456"
+
+            $newWidth = $newWidth == "" ? null : $newWidth;
+            if( !is_null( $newWidth ) or !is_null( $newHeight ) )
+                $resize = true;
+        }
+        else
+        {
+            $image = $this->image;
+        }
+
         $tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
-        $file = "{$tvShowPath}/" . str_replace( ':', '/', $this->image );
+        $file = "{$tvShowPath}/" . str_replace( ':', '/', $image );
         // @todo Throw a dedicated extension
         if ( !file_exists( $file ) )
             throw new ezcBaseValueException( 'image', $file );
 
         $finfo = new finfo( FILEINFO_MIME );
         header( "Content-Type: " . $finfo->file( $file ) );
-        readfile( $file );
+        if ( $resize )
+        {
+            list( $oldWidth, $oldHeight ) = getimagesize( $file );
+            if ( is_null( $newHeight ) )
+            {
+                $ratio = $newWidth / $oldWidth;
+                $newHeight = $ratio * $oldHeight;
+            }
+            elseif( is_null( $newWidth ) )
+            {
+                $ratio = $newHeight / $oldHeight;
+                $newWidth = $ratio * $oldWidth;
+            }
+
+            $thumb = imagecreatetruecolor($newWidth, $newHeight);
+            $source = imagecreatefromjpeg($file);
+            imagecopyresized($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $oldWidth, $oldHeight);
+            imagejpeg($thumb);
+        }
+        else
+        {
+            readfile( $file );
+        }
+
         exit;
 
         return $result;
