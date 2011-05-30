@@ -229,7 +229,7 @@ class mmMkvManagerController extends ezcMvcController
     {
         $result = new ezcMvcResult;
         $result->variables['page_title'] = "TV Manager :: MKV Manager";
-        $result->variables += mmApp::doTVDashboard();
+        $result->variables += mmApp::doTVManager();
         return $result;
     }
 }
