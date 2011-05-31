@@ -195,5 +195,15 @@ $value = substr( $value, 0, strrpos( $value, '/', $params['movies_path_element_c
 
         return array( 'trailers' => $infos->trailers );
     }
+
+    /**
+     *
+     * @return array
+     */
+    public function doTVManager()
+    {
+        $shows = TVShowFolder::fetchList();
+        return array( 'shows' => $shows );
+    }
 }
 ?>
