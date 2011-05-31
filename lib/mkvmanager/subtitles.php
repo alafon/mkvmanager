@@ -89,9 +89,10 @@ class mmMkvManagerSubtitles
     {
         if ( preg_match( '/^(.*?)(\.([a-zA-Z]+))?\.([a-zA-Z]+)$/', $filename, $matches ) )
         {
-            return array( 'episode_name' => $matches[1],
-                          'sub_language' => $matches[3] == "" ? null : $matches[3],
-                          'sub_type' => $matches[4] );
+            return array( 'filename' => basename( $matches[0] ),
+                          'episode_path' => dirname( $matches[0] ),
+                          'language' => $matches[3] == "" ? null : substr( strtolower( $matches[3] ), 0, 2 ),
+                          'type' => strtolower( $matches[4] ) );
         }
         else
             return false;
