@@ -19,7 +19,7 @@ class TVEpisodeFile
      * Constructs a TVEpisodeFile based on the filename $filename
      * @param string $filename
      */
-    public function __construct( $filename )
+    public function __construct( $filename, $loadExtras = false )
     {
         $pathinfo = pathinfo( $filename );
         $this->filename = $filename;
@@ -28,6 +28,14 @@ class TVEpisodeFile
         if ( preg_match( '/^(.*?) - [sS]?([0-9]+)[xXeE]([0-9]+)(-[0-9]+)? - (.*)$/', $this->fullname, $matches ) )
             list(, $this->showName, $this->seasonNumber, $this->episodeNumber, $this->episodeNumber2, $this->episodeName ) = $matches;
         $this->checkValidity();
+
+        if ( $loadExtras === true ) {
+            $cachedPropertieKeys = array( 'mkvinfo', 'hasMergedSubtitles', 'mergedSubtitles', 'hasSubtitleFiles', 'subtitleFiles' );
+            foreach ( $cachedPropertieKeys as $cachedPropertyKey )
+            {
+                $this->cache[$cachedPropertyKey] = $this->$cachedPropertyKey;
+            }
+        }
     }
 
     /**
@@ -217,6 +225,8 @@ class TVEpisodeFile
      * @var boolean
      */
     public $isValid;
+
+    public $cache;
 }
 
 ?>
