@@ -308,7 +308,7 @@ $(document).ready(function() {
     <a name="<?=anchorLink($showName)?>"></a>
     <div class="listingItem">
     <div class="showContainer">
-        <img src="/tvshow/image/<?=$showName?>:folder.jpg" height="130" />
+        <img src="/tvshow/image/<?=$showName?>:folder.jpg@88x130" />
         <div class="showDetails">
             <h3><?=$showName?></h3>
             <ul class="icon listEpisodes">
