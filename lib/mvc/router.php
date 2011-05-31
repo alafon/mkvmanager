@@ -41,6 +41,8 @@ class mmMvcRouter extends ezcMvcRouter
             new ezcMvcRailsRoute( '/ajax/movie-search-subtitles/:ReleaseId',           'mmAjaxController', 'movieSearchReleaseSubtitles' ),
             new ezcMvcRailsRoute( '/ajax/movie-download-subtitle/:Folder/:SubtitleId', 'mmAjaxController', 'movieDownloadSubtitle' ),
 
+            new ezcMvcRailsRoute( '/ajax/scansubtitles/:ShowName', 'mmAjaxController', 'showScanSubtitles' ),
+
             new ezcMvcRailsRoute( '/ajax/downloadsubtitle/:VideoFile/:DownloadUrl/:Zip/:SubFileName',
                 'mmAjaxController', 'downloadSubtitles' ),
             new ezcMvcRailsRoute( '/ajax/downloadsubtitle/:VideoFile/:DownloadUrl/:SubFileName',

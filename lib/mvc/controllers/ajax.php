@@ -550,5 +550,50 @@ class mmAjaxController extends ezcMvcController
 
         return $result;
     }
+
+    /**
+     * Scan a show directory and return information about episodes & subtitles
+     * @return ezcMvcResult
+     */
+    public function doShowScanSubtitles()
+    {
+        // Most of this has been copy/paste from app::doTVDashboard
+        // @TODO remember to refactor such code with "data providers"
+
+        $tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
+        $episodes = array();
+        $byDate = array();
+        $notValidEpisode = array();
+
+        foreach( mmMkvManagerSubtitles::fetchFiles( $this->ShowName ) as $file )
+        {
+            $episode = new TVEpisodeFile( $file, true );
+            if( $episode->isValid )
+            {
+                $episodeID = sprintf("%02d",$episode->seasonNumber).sprintf("%02d",$episode->episodeNumber);
+                $episodes[$episodeID] = $episode;
+                $filemtime = filemtime( "{$tvShowPath}/{$episode->showName}/{$file}" );
+                $byDate[$filemtime] = $episode;
+            }
+            else
+            {
+                $notValidEpisode[] = $episode;
+            }
+        }
+        krsort( $byDate );
+        ksort( $episodes );
+        $latest = array_slice( $byDate, 0, 3 );
+
+
+        $variables = array( 'status' => 'ok',
+                            'episodes' => $episodes,
+                            'showName' => $this->ShowName,
+                            'showPath' => "{$tvShowPath}/{$episode->showName}" );
+
+        $result = new ezcMvcResult();
+        $result->variables += $variables;
+
+        return $result;
+    }
 }
 ?>
