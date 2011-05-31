@@ -48,15 +48,17 @@ class mmMkvManagerSubtitles
         return $list;
     }
 
-    public static function fetchFiles()
+    public static function fetchFiles( $showName = null )
     {
         $tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
         $list = array();
 
+        $showNameFilter = is_null( $showName ) ? "*" : $showName;
+
         try {
             try {
                 //foreach( new UnsortedEpisodesFilter( $iterator ) as $file )
-                foreach( glob( "{$tvShowPath}/*/*.{mkv,avi}", GLOB_BRACE ) as $file )
+                foreach( glob( "{$tvShowPath}/{$showNameFilter}/*.{mkv,avi}", GLOB_BRACE ) as $file )
                 {
                     if ( sprintf( "%u", filesize( $file ) ) < ( 25 * 1024 * 1024 ) )
                     {
