@@ -12,6 +12,9 @@
  * @property-read string $subtitleFile the file's subtitle, if it exists
  * @property-read array $subtitleFiles the file's subtitles, if it exist
  * @property-read double $fileSize the episode file's size
+ * @property-read array $mkvinfo
+ * @property-read bool $hasMergedSubtitles
+ * @property-read array $mergedSubtitles
  */
 class TVEpisodeFile
 {
@@ -67,14 +70,58 @@ class TVEpisodeFile
      */
     static public function requiredProperties()
     {
-		return array( 'showName', 'seasonNumber', 'episodeNumber', 'episodeName', 'fullname' );
+        return array( 'showName', 'seasonNumber', 'episodeNumber', 'episodeName', 'fullname' );
     }
 
     public function __get( $property )
     {
-    	$tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
+        $tvShowPath = ezcConfigurationManager::getInstance()->getSetting( 'tv', 'GeneralSettings', 'SourcePath' );
+        $basedir = "{$tvShowPath}/{$this->showName}/";
         switch( $property )
         {
+            case 'mkvinfo':
+                $basedirAndFilename = $basedir . $this->filename;
+                $systemFullPath = str_replace( ' ', '\ ', $basedirAndFilename );
+                $pathinfo = pathinfo( $systemFullPath );
+
+                //echo $systemFullPath;
+                if( $pathinfo['extension'] == 'mkv' )
+                {
+                    $cmd = "mkvinfo " . $systemFullPath;
+                    exec( $cmd, $result, $return );
+                    return $return == 0 ? array( 'result' => $result, 'return' => $return ) : null;
+                }
+                else
+                {
+                    return null;
+                }
+                break;
+
+            case 'hasMergedSubtitles':
+                return count( $this->mergedSubtitles ) > 0;
+                break;
+
+            //@TODO change returned format
+            case 'mergedSubtitles':
+                $subtitles = array();
+                $mkvinfo = $this->mkvinfo;
+                if( !is_null($mkvinfo) )
+                {
+                    $xmlResult = self::parseMKVInfoResult( $mkvinfo['result'] );
+                    $xmlSimple = simplexml_import_dom( $xmlResult );
+
+                    $subtitleElements = $xmlSimple->xpath( "//A-track[@track-type='subtitles']/Language" );
+                    foreach ( $subtitleElements as $subtitleElement )
+                    {
+                        /* @var $subtitleElement SimpleXMLElement */
+                        //var_dump($subtitleElement->xpath( "//Language" ));
+
+                        $subtitles[] = strtolower( substr( $subtitleElement->attributes()->value, 0, 2 ));
+                    }
+                }
+                return $subtitles;
+                break;
+
             case 'hasSubtitleFile':
                 $basedirAndFile = "{$tvShowPath}/{$this->showName}/{$this->fullname}";
                 return ( file_exists( "$basedirAndFile.srt" ) || file_exists( "$basedirAndFile.ass" ) );
@@ -112,20 +159,22 @@ class TVEpisodeFile
 
                 if( count( $assQualityFiles ) > 0 )
                 {
-                    array_walk( $assQualityFiles );
+                    array_walk( $assQualityFiles, $identifySubtitles );
                     $subtitleFiles['ass'] = $assQualityFiles;
                 }
                 if( count( $srtQualityFiles ) > 0 )
                 {
-                    array_walk( $srtQualityFiles );
+                    array_walk( $srtQualityFiles, $identifySubtitles );
                     $subtitleFiles['srt'] = $srtQualityFiles;
                 }
 
                 if( count( $subtitleFiles ) > 0 )
+                {
                     return $subtitleFiles;
+                }
                 else
                 {
-                    throw new Exception("No subtitle found for $this->filename" );
+                    return false;
                 }
                 break;
 
@@ -167,9 +216,79 @@ class TVEpisodeFile
             case 'fileSize':
                 return mmMkvManagerDiskHelper::bigFileSize( $this->path );
 
+            case 'cache':
+                return $this->cache;
+
             default:
                 throw new ezcBasePropertyNotFoundException( $property );
         }
+    }
+
+    public static function parseMKVInfoResult( $stringAsArray )
+    {
+        $dom = new DOMDocument();
+        $root = $dom->createElement( "root" );
+        $dom->appendChild( $root );
+
+        $level = 0;
+        $parent = $root;
+        /* @var $lastElement DOMElement */
+        /* @var $element DOMElement */
+        $lastElement = $root;
+
+        foreach ( $stringAsArray as $line )
+        {
+            $lastLevel = $level;
+
+            //echo $line;
+            preg_match( "/^(\|*)?(\ *)?\+\ (.+)$/i", $line, $matches );
+            $level = strlen( $matches[1] ) + strlen( $matches[2] );
+
+            preg_match( "/^([a-zA-Z\ \(\),]+)+:?(.*)/", $matches[3], $matches2 );
+
+            // replace all specials chars by a "-"
+            // trim the "-" at the beginning and the end of the string
+            // (if there was some special chars at these positions)
+            $nodeName = trim( preg_replace( '/[^a-z0-9]+/i', '-', $matches2[1] ), "-" );
+            $nodeValue = trim( $matches2[2] );
+
+            //echo "$level - $nodeName : $nodeValue<br />";
+
+            $element = $dom->createElement( $nodeName );
+            if ( $nodeValue != "" )
+                $element->setAttribute( "value", $nodeValue );
+
+            // add the track-type as an attribute to retrieve stuff easily
+            if ( $nodeName == 'Track-type' )
+            {
+                $parent->setAttribute( "track-type", $nodeValue );
+            }
+
+            // parent choice depending on where we were before (based on the level)
+            if ( $lastLevel == $level )
+                $parent->appendChild( $element );
+            elseif ( $level > $lastLevel )
+            {
+                $parent = $lastElement;
+                $parent->appendChild( $element );
+            }
+            elseif ( $level < $lastLevel )
+            {
+                $diff = $lastLevel - $level;
+                for ( $i=0; $i < $diff; $i++ )
+                {
+                    $parent = $parent->parentNode;
+                }
+                $parent->appendChild( $element );
+            }
+            $lastElement = $element;
+        }
+
+
+        return $dom;
+        header( "Content-Type: text/xml" );
+        echo( $dom->saveXML() );
+        exit;
     }
 
     /**
