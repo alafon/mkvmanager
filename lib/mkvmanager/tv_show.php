@@ -10,7 +10,7 @@ class TVShow
     public function __construct( $name )
     {
         $this->name = $name;
-        $this->systemName = preg_replace( '/[^a-z0-9]/', '', $this->name );
+        $this->systemName = preg_replace( '/[^a-z0-9]/i', '', $this->name );
     }
 
     public $name;
