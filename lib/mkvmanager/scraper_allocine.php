@@ -20,6 +20,14 @@ class MkvManagerScraperAllocine extends MkvManagerScraper
      */
     public function searchMovies( $queryString )
     {
+        // allocine won't accept a year in the query string
+        if ( preg_match( '/^(.*) \(([0-9]{4})\)$/', $queryString, $m ) )
+        {
+            $queryString = $m[1];
+            $year = $m[2];
+        }
+        $queryString = preg_replace( "/(.')/", '', $queryString );
+
         $url = sprintf( "$this->baseURL/$this->searchURI", urlencode( $queryString ) );
 
         $doc = $this->fetch( $url, 'parseFromXMLToXML' );
@@ -35,7 +43,11 @@ class MkvManagerScraperAllocine extends MkvManagerScraper
             $result->releaseDate = (string)$movie->release->releaseDate;
             $result->directorsShort = explode(', ', (string)$movie->castingShort->directors );
             $result->actorsShort = explode( ', ', (string)$movie->castingShort->actors );
+
             $result->thumbnail = (string)$movie->poster['href'];
+
+            $result->url = (string)$movie->linkList->link['href'];
+
 
             $results[] = $result;
         }
@@ -114,7 +126,7 @@ class MkvManagerScraperAllocine extends MkvManagerScraper
                 if ( (int)$media->type['code'] != 31001 and (int)$media->type['code'] != 31125 )
                     continue;
 
-                $result->posters[] = (string)$media->thumbnail['href'];
+                $result->posters[] = new \mm\Info\Image( 'poster', (string)$media->thumbnail['href'] );
             }
             elseif ( (string)$media['class'] == 'video' )
             {

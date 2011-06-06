@@ -15,6 +15,10 @@
  * Uses an Info\Movie\Details object to generate an XBMC NFO
  */
 namespace mm\Xbmc\Nfo\Writers;
+use \ezcBaseFileNotFoundException as ezcBaseFileNotFoundException;
+use \ezcBaseFilePermissionException as ezcBaseFilePermissionException;
+use \ezcBaseFileException as ezcBaseFileException;
+
 class Movie
 {
     /**
@@ -33,7 +37,7 @@ class Movie
     public function get()
     {
         $this->generateXml();
-        return $this->xml->asXML();
+        return $this->getDom()->saveXML();
     }
 
     /**
@@ -58,7 +62,21 @@ class Movie
         }
 
         $this->generateXml();
-        $this->xml->asXML( $filename );
+
+        file_put_contents( $filename, $this->get() );
+    }
+
+    /**
+     * Returns the DOMDocument from the SimpleXMLElement $this->xml
+     * Used to format the XML properly
+     *
+     * @return DOMDocument
+     */
+    private function getDom()
+    {
+        $dom = dom_import_simplexml( $this->xml )->ownerDocument;
+        $dom->formatOutput = true;
+        return $dom;
     }
 
     /**
@@ -79,9 +97,14 @@ class Movie
 
         if ( count( $this->info->trailers ) )
         {
-            foreach( $this->info->trailers as $index => $trailer )
+            $xml->trailer = $this->info->trailers[0]->url;
+        }
+
+        if ( count( $this->info->genre ) )
+        {
+            foreach( $this->info->genre as $genre )
             {
-                $xml->trailers->trailer[$index] = $trailer->url;
+                $xml->genres->genre[] = (string)$genre;
             }
         }
 
@@ -116,7 +139,8 @@ class Movie
         {
             foreach( $this->info->posters as $index => $poster )
             {
-                $xml->thumbs->thumb[$index] = $poster;
+                if ( $poster !== null )
+                    $xml->thumbs->thumb[] = (string)$poster;
             }
         }
 
@@ -124,11 +148,57 @@ class Movie
         {
             foreach( $this->info->fanarts as $index => $fanart )
             {
-                $xml->fanarts->thumb[$index] = $fanart;
+                if ( $fanart !== null )
+                    $xml->fanarts->thumb[] = (string)$fanart;
             }
         }
 
         $this->xml = $xml;
+    }
+
+    /**
+     * Downloads and saves the main movie poster to $filepath
+     *
+     * @param string $filepath
+     * @return bool true if the file was written successfully
+     */
+    public function downloadMainPoster( $filepath )
+    {
+        return $this->download( (string)$this->info->posters[0], $filepath );
+    }
+
+    /**
+     * Downloads and saves the main movie fanart to $filepath
+     *
+     * @param string $filepath
+     * @return bool true if the file was written successfully
+     */
+    public function downloadMainFanart( $filepath )
+    {
+        return $this->download( (string)$this->info->fanarts[0], $filepath );
+    }
+
+    /**
+     * Downloads and saves the movie trailer to $filepath
+     *
+     * @param string $filepath
+     * @return bool true if the file was written successfully
+     */
+    public function downloadTrailer( $filepath )
+    {
+        return $this->download( (string)$this->info->trailers[0], $filepath );
+    }
+
+    /**
+     * Downloads and saves $file to $filepath
+     *
+     * @param string $file
+     * @param string $targetpath
+     * @return bool true if the file was written successfully
+     */
+    private function download( $file, $targetpath )
+    {
+        return copy( $file, $targetpath );
     }
 
     /**

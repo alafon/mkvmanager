@@ -34,7 +34,7 @@ abstract class MkvManagerScraper
             $this->requestUrl .= '?' . implode( '&', $URIComponents );
         }
 
-        if ( $this->isCacheEnabled )
+        if ( self::$isCacheEnabled )
         {
             try {
                 $cache = ezcCacheManager::getCache( 'scrapers' );
@@ -44,7 +44,7 @@ abstract class MkvManagerScraper
             $cacheId = md5( $this->requestUrl );
         }
 
-        if ( !$this->isCacheEnabled || !( $this->responseBody = $cache->restore( $cacheId ) ) )
+        if ( !self::$isCacheEnabled || !( $this->responseBody = $cache->restore( $cacheId ) ) )
         {
             set_error_handler( array( $this, 'phpFileGetContentsErrorHandler' ) );
             $this->responseBody = @file_get_contents( $this->requestUrl, 0, stream_context_create( array(
@@ -57,7 +57,7 @@ abstract class MkvManagerScraper
             if( $this->HTTPStatus() != self::HTTP_OK )
                 throw new MkvManagerScraperHTTPException( $this->requestUrl, $this->responseHeaders );
 
-            if ( $this->isCacheEnabled)
+            if ( self::$isCacheEnabled)
                 $cache->store( $cacheId, $this->responseBody );
         }
         else
@@ -123,8 +123,7 @@ abstract class MkvManagerScraper
      */
     public function phpFileGetContentsErrorHandler( $errno, $errstr, $errfile, $errline, $errcontext )
     {
-
-        if ( $errno === E_WARNiNG )
+        if ( $errno === E_WARNING )
             throw new MkvManagerScraperNetworkException( $errcontext['url'] );
         else
             return false;
@@ -148,6 +147,6 @@ abstract class MkvManagerScraper
      */
     abstract public function get();
 
-    public $isCacheEnabled = true;
+    public static $isCacheEnabled = true;
 }
 ?>

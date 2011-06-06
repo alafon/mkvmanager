@@ -9,7 +9,7 @@ class mmMkvManagerController extends ezcMvcController
     public function doFatal()
     {
         $result = new ezcMvcResult;
-        $result->variables['exception'] = isset( $this->request->variables['exception'] );
+        $result->variables['exception'] = isset( $this->request->variables['exception'] ) ? $this->request->variables['exception'] : false;
         $result->variables['page_title'] = "An error has occured";
         return $result;
     }
@@ -254,22 +254,6 @@ class mmMkvManagerController extends ezcMvcController
         $result->variables['command'] = $generator->getCommandString();
 
         $result->variables += mmApp::doMovies();
-        return $result;
-    }
-
-    /**
-     * Fetches the trailer URL for a movie based on its allocine ID
-     *
-     * @param string AllocineId
-     *
-     * @return ezcMvcResult
-     */
-    public function doTrailer()
-    {
-        $result = new ezcMvcResult;
-        $result->variables['page_title'] = "$this->AllocineId :: Trailer :: MKV Manager";
-        $result->variables['allocine_id'] = $this->AllocineId;
-        $result->variables += mmApp::doTrailer( $this->AllocineId );
         return $result;
     }
 }
