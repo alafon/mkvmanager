@@ -26,6 +26,9 @@ List
   - curl
   - existance of the tmp folders
   - right permissions on these folders
+  - short_open_tag = On
+  - right permissions to list the contents of the TV & Movies folders provided
+    in the config files
 
 Done
 ====

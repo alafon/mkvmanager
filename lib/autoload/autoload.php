@@ -1,5 +1,5 @@
 <?php
-return array(
+$autoload = array(
     'MKVMergeCommand'                 => 'mkvmerge/command.php',
     'MKVMergeCommandQueue'            => 'mkvmerge/commandqueue.php',
     'MKVMergeCommandImportWindowsGUI' => 'mkvmerge/commandimportwindowsgui.php',
@@ -26,8 +26,9 @@ return array(
     'mmHtmlView'         => 'mvc/views/html.php',
     'mmAjaxView'         => 'mvc/views/ajax.php',
 
-    'mmMkvManagerController' => 'mvc/controllers/mkvmanager.php',
-    'mmAjaxController'       => 'mvc/controllers/ajax.php',
+    'mmMkvManagerController'   => 'mvc/controllers/mkvmanager.php',
+    'mmAjaxController'         => 'mvc/controllers/ajax.php',
+    'mm\Mvc\Controllers\Movie' => 'mvc/controllers/movie.php',
 
     'mmMvcResultStatusNotFound' => 'mvc/result_status/error_not_found.php',
     'mmMvcResultStatusError'    => 'mvc/result_status/error.php',
@@ -41,14 +42,10 @@ return array(
     'MkvManagerScraperBetaSeries'   => 'mkvmanager/scraper_betaseries.php',
     'MkvManagerScraperSoustitreseu' => 'mkvmanager/scraper_soustitreseu.php',
     'MkvManagerScraperSubsynchro'   => 'mkvmanager/scraper_subsynchro.php',
-    'MkvManagerScraperAllocine2'    => 'mkvmanager/scraper_allocine2.php',
     'MkvManagerScraperAllocine'     => 'mkvmanager/scraper_allocine.php',
-
-    'MkvManagerScraperAllocineSearchResult' => 'mkvmanager/scraper_allocine.php',
-    'MkvManagerScraperAllocineResult' => 'mkvmanager/scraper_allocine.php',
-    'MkvManagerScraperAllocinePerson' => 'mkvmanager/scraper_allocine.php',
-    'MkvManagerScraperAllocineActor' => 'mkvmanager/scraper_allocine.php',
-    'MkvManagerScraperAllocineTrailer' => 'mkvmanager/scraper_allocine.php',
+    '\MkvManagerScraperAllocine'     => 'mkvmanager/scraper_allocine.php',
+    'MkvManagerScraperTMDB'         => 'mkvmanager/scraper_tmdb.php',
+    '\MkvManagerScraperTMDB'         => 'mkvmanager/scraper_tmdb.php',
 
     'MkvManagerScraperHTTPException' => 'mkvmanager/exceptions/scraper_http.php',
     'MkvManagerScraperHTMLException' => 'mkvmanager/exceptions/scraper_html.php',
@@ -64,5 +61,13 @@ return array(
     'mm\Info\Actor' => 'Info/Actor.php',
     'mm\Info\Director' => 'Info/Director.php',
     'mm\Info\Trailer' => 'Info/Trailer.php',
+    'mm\Info\Image' => 'Info/Image.php',
+
+    'mm\Xbmc\Nfo\Writers\Movie' => 'Xbmc/Nfo/Writers/Movie.php',
+
+    'mm\Daemon\Daemon' => 'Daemon/Daemon.php',
+    'mm\Daemon\BackgroundOperation' => 'Daemon/BackgroundOperation.php',
 );
+
+return $autoload;
 ?>

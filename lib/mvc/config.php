@@ -30,7 +30,8 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
     function createView( ezcMvcRoutingInformation $routeInfo,
         ezcMvcRequest $request, ezcMvcResult $result )
     {
-        if ( $routeInfo->controllerClass == "mmAjaxController" )
+        if ( strpos( $routeInfo->matchedRoute, '/ajax/' ) !== false ||
+             $routeInfo->matchedRoute == '/nfo/movie/update-info' )
         {
             $view = new mmAjaxView( $request, $result );
         }
@@ -57,8 +58,6 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
             }
         }
 
-
-
         return $view;
 
     }
@@ -82,12 +81,12 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
     {
         $req = clone $request;
 
+        $req->variables = array(
+            'status' => 'ko',
+            'message' => $response->getMessage(),
+            'exception' => print_r( $response, true ) );
         if ( substr( $request->uri, 0, 5 ) == '/ajax' )
         {
-            $req->variables = array(
-                'status' => 'ko',
-                'message' => $response->getMessage(),
-                'exception' => print_r( $response, true ) );
             $req->uri = '/ajax/fatal';
         }
         else
@@ -102,7 +101,7 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
     {
         if ( $request->uri == '/fatal' )
         {
-            $result->status = 500;
+
         }
     }
 
@@ -122,28 +121,43 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
                 $this->contentType = $this->suffixContentTypeMapping[ $matches['type'] ];
                 $request->uri = $matches['url1'] . $matches['url2'];
             }
-            //else
-            //    throw new tclInvalidContentTypeException( $matches['type'] );
         }
     }
 
     function runRequestFilters( ezcMvcRoutingInformation $routeInfo, ezcMvcRequest $request )
     {
+        switch ( $routeInfo->matchedRoute )
+        {
+            case '/nfo/movie/update-info':
+                // @todo Transform back into an object with an eval
+                $request->variables['info'] = eval( "return {$_POST['info']};");
+                $request->variables['actionType'] = $_POST['actionType'];
+                $request->variables['actionValue'] = $_POST['actionValue'];
+                break;
+
+            case '/nfo/movie/save/:folder':
+                // @todo Transform back into an object with an eval
+                $request->variables['info'] = eval( "return {$_POST['Info']};");
+                break;
+        }
     }
 
     function runResponseFilters( ezcMvcRoutingInformation $routeInfo, ezcMvcRequest $request, ezcMvcResult $result, ezcMvcResponse $response )
     {
         if ( $this->contentType !== null )
             $response->content = new ezcMvcResultContent( '', $this->contentType, 'utf-8' );
+        $response->content->charset = 'utf-8';
 
         // handle fatal error responses, setting the appropriate request status result
         if ( $request->uri == '/fatal' )
+        {
             // not found (404) error
             /*if ( $request->variables['exception'] instanceof tclScraperNotFoundException )
-                $response->status = new mmMvcResultStatusNotFound;
-            // unknown error (500)
-            else*/
+               $response->status = new mmMvcResultStatusNotFound;
+               // unknown error (500)
+               else*/
             $response->status = new mmMvcResultStatusError;
+        }
     }
 
     protected $contentType;

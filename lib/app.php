@@ -119,6 +119,15 @@ $value = substr( $value, 0, strrpos( $value, '/', $params['movies_path_element_c
 
         // list of NFO files, extensions stripped
         $moviesNFOs  = glob( $moviesPath . '/*/*.nfo' );
+        foreach( $moviesNFOs as $key => $filename )
+        {
+            $dom = new DOMDocument();
+            if( ! @$dom->load( $filename ))
+            {
+                unset( $moviesNFOs[$key] );
+            }
+        }
+        reset( $moviesNFOs );
         array_walk( $moviesNFOs, $callback, array( 'movies_path_element_count' => $moviesPathElementCount ) );
 
         // the diff of both arrays gives us movies without NFOS (and NFOs without movies, but that's unlikely)
@@ -183,17 +192,36 @@ $value = substr( $value, 0, strrpos( $value, '/', $params['movies_path_element_c
     }
 
     /**
-     * Fetches the trailer URL for a movie based on its allocine ID
+     * Fetches the NFO for the movie id $AllocineId
      *
      * @param string AllocineId
-     * @return array(trailers=>array(MkvManagerScraperAllocineTrailer))
+     * @return array(nfo => string))
      */
-    public function doTrailer( $allocineId )
+    public function doNfo( $allocineId )
     {
         $scraper = new MkvManagerScraperAllocine;
         $infos = $scraper->getMovieDetails( $allocineId );
+        $writer = new \mm\Xbmc\Nfo\Writers\Movie( $infos );
 
-        return array( 'trailers' => $infos->trailers );
+        return array( 'nfo' => $writer->get() );
+    }
+
+    /**
+     * Fetches the NFO for the movie id $AllocineId
+     *
+     * @param string AllocineId
+     * @return array(nfo => string))
+     */
+    public function doSaveNfo( $allocineId, $movieFolder )
+    {
+        $scraper = new MkvManagerScraperAllocine;
+        $infos = $scraper->getMovieDetails( $allocineId );
+        $writer = new \mm\Xbmc\Nfo\Writers\Movie( $infos );
+
+        $nfoPath = ezcConfigurationManager::getInstance()->getSetting( 'movies', 'GeneralSettings', 'SourcePath' ) .
+            DIRECTORY_SEPARATOR . $movieFolder . DIRECTORY_SEPARATOR . "$movieFolder.nfo";
+
+        return array( 'nfo' => $writer->write( $nfoPath ) );
     }
 
     /**

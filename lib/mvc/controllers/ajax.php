@@ -592,7 +592,17 @@ class mmAjaxController extends ezcMvcController
 
         $result = new ezcMvcResult();
         $result->variables += $variables;
+        return $result;
+    }
 
+    /*
+     * @param AllocineId
+     * @param MovieFolder
+     */
+    public function doSaveNfo()
+    {
+        $result = new ezcMvcResult();
+        $result->variables += mmApp::doSaveNfo( $this->AllocineId, $this->Folder );
         return $result;
     }
 }
