@@ -1,6 +1,6 @@
 <?php
 /**
- * File containing the mm\Daemon\BackgroundOperation class.
+ * File containing the mm\Daemon\AsynchronousProgressBackgroundOperation class.
  *
  * @copyright Copyright (C) 1999-2011 eZ Systems AS. All rights reserved.
  * @license http://ez.no/licenses/gnu_gpl GNU GPL v2
@@ -16,8 +16,14 @@ namespace mm\Daemon;
 
 interface BackgroundOperation
 {
+    /**
+     * Run the operation
+     */
     public function run();
 
+    /**
+     * Resets the operation
+     */
     public function reset();
 }
 ?>
