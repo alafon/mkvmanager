@@ -11,6 +11,8 @@ use stdClass;
 class QueueItem
 {
     public $hash = null;
+    public $type = '';
+    public $title = '';
     public $createTime = 0;
     public $startTime = 0;
     public $endTime = 0;
@@ -32,8 +34,10 @@ class QueueItem
         if ( $operation !== null )
         {
             $this->object = $operation;
+            $this->type = $operation->getType();
             $this->objectString = var_export( $this->object, true );
             $this->hash = sha1( var_export( $this, true ) );
+            $this->title = (string)$this->object;
             $this->object->setQueueItem( $this );
         }
     }
@@ -42,6 +46,8 @@ class QueueItem
     {
         $result = array();
         $result['hash'] = $this->hash;
+        $result['type'] = $this->type;
+        $result['title'] = $this->title;
         $result['createTime'] = $this->createTime;
         $result['startTime'] = $this->startTime;
         $result['endTime'] = $this->endTime;
