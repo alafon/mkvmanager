@@ -56,6 +56,16 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
                         $result->variables['__request'] = $request;
                     }
             }
+            $topMenuConfig = ezcConfigurationManager::getInstance()->getSetting( 'mkvmanager', 'TopMenu', 'Items' );
+            $topMenu = array();
+            foreach ( $topMenuConfig as $topMenuIdentifier => $topMenuItem )
+            {
+                list( $url, $text ) = explode( ";", $topMenuItem );
+                $topMenu[] = array( "url" => $url,
+                                    "text" => $text,
+                                    "identifier" => $topMenuIdentifier );
+            }
+            $result->variables['top_menu'] = $topMenu;
         }
 
         return $view;
@@ -129,14 +139,16 @@ class mmMvcConfiguration implements ezcMvcDispatcherConfiguration
         switch ( $routeInfo->matchedRoute )
         {
             case '/nfo/movie/update-info':
-                // @todo Transform back into an object with an eval
                 $request->variables['info'] = eval( "return {$_POST['info']};");
                 $request->variables['actionType'] = $_POST['actionType'];
                 $request->variables['actionValue'] = $_POST['actionValue'];
                 break;
 
             case '/nfo/movie/save/:folder':
-                // @todo Transform back into an object with an eval
+                $request->variables['info'] = eval( "return {$_POST['info']};");
+                break;
+
+            case '/nfo/movie/save/:folder':
                 $request->variables['info'] = eval( "return {$_POST['info']};");
                 break;
         }

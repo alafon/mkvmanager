@@ -43,15 +43,19 @@ class Queue
     {
         $session = ezcPersistentSessionInstance::get();
 
-        $query = $session->createFindQuery( 'mm\\Daemon\\QueueItem' );
-        $query->where( $query->expr->eq( 'status', $query->bindValue( QueueItem::STATUS_PENDING ) ) )
-              ->limit( 1 );
-        $pendingOperations = $session->find( $query );
+        if ( count( self::fetchItems( QueueItem::STATUS_RUNNING ) ) === 0 )
+        {
+            $query = $session->createFindQuery( 'mm\\Daemon\\QueueItem' );
+            $query->where( $query->expr->eq( 'status', $query->bindValue( QueueItem::STATUS_PENDING ) ) )
+                  // @todo add orderBy
+                  ->limit( 1 );
+            $pendingOperations = $session->find( $query );
 
-        if ( count( $pendingOperations ) == 1 )
-            return array_pop( $pendingOperations );
-        else
-            return false;
+            if ( count( $pendingOperations ) == 1 )
+                return array_pop( $pendingOperations );
+        }
+
+        return false;
     }
 
     /**
@@ -62,7 +66,7 @@ class Queue
      *
      * @return array( mm\Daemon\QueueItem )
      */
-    public static function fetchItems( $status, $type = null)
+    public static function fetchItems( $status, $type = null )
     {
         if ( !in_array( $type, array( QueueItem::STATUS_ARCHIVED, QueueItem::STATUS_DONE, QueueItem::STATUS_ERROR, QueueItem::STATUS_PENDING, QueueItem::STATUS_RUNNING ) ) )
             throw new ezcBaseValueException( 'type', $type );
@@ -71,7 +75,21 @@ class Queue
         $q->where( $q->expr->eq( 'status', $status ) )
           ->orderBy( 'create_time' );
         if ( $type !== null )
-            $q->where( $q->expr->eq( 'type', $type ) );
+            $q->where( $q->expr->eq( 'type', $q->bindValue( $type ) ) );
+        return $session->find( $q );
+    }
+
+    /**
+     * Fetches a series of items based on their $hashes
+     * @param array $hashes
+     * @return array( QueueItem )
+     */
+    public static function fetchItemsByHash( array $hashes )
+    {
+        $session = ezcPersistentSessionInstance::get();
+        $q = $session->createFindQuery( 'mm\Daemon\QueueItem' );
+        $q->where( $q->expr->in( 'hash', $hashes ) )
+          ->orderBy( 'create_time' );
         return $session->find( $q );
     }
 }

@@ -119,50 +119,50 @@ class MkvManagerScraperAllocine extends MkvManagerScraper
 
         if( isset( $doc->genreList->genre ) )
         {
-        foreach( $doc->genreList->genre as $genre )
-        {
-            $result->genre[] = (string)$genre;
-        }
+            foreach( $doc->genreList->genre as $genre )
+            {
+                $result->genre[] = (string)$genre;
+            }
         }
 
         if( isset( $doc->mediaList->media ) )
         {
-        foreach( $doc->mediaList->media as $media )
-        {
-            if ( (string)$media['class'] == 'picture' )
-            {
-                // affiches seulement
-                if ( (int)$media->type['code'] != 31001 and (int)$media->type['code'] != 31125 )
-                    continue;
-
-                $result->posters[] = new \mm\Info\Image( 'poster', (string)$media->thumbnail['href'] );
-            }
-            elseif ( (string)$media['class'] == 'video' )
-            {
-                if ( (int)$media->type['code'] != 31003 )
-                    continue;
-                $trailerCode = (int)$media['code'];
-
-                $uri = $uri = sprintf( $this->trailerURI, $trailerCode );
-                $videoNode = $this->fetch( $uri, 'parseFromXMLToXMLWithUTF8Conversion' )->AcVisionVideo;
-                $trailerHref = false;
-                if ( (string)$videoNode['hd_path'] != '' )
-                    $trailerHref = (string)$videoNode['hd_path'];
-                elseif ( (string)$videoNode['md_path'] != '' )
-                    $trailerHref = (string)$videoNode['md_path'];
-                elseif ( (string)$videoNode['ld_path'] != '' )
-                    $trailerHref = (string)$videoNode['ld_path'];
-
-                if ( $trailerHref !== false )
+            foreach( $doc->mediaList->media as $media )
+	    {
+                if ( (string)$media['class'] == 'picture' )
                 {
-                    $trailerObject = new mm\Info\Trailer();
-                    $trailerObject->title = (string)$media->title;
-                    $trailerObject->url = $trailerHref;
-                    $trailerObject->language = (string)$media->version;
-                    $result->trailers[] = $trailerObject;
+                    // affiches seulement
+                    if ( (int)$media->type['code'] != 31001 and (int)$media->type['code'] != 31125 )
+                        continue;
+
+                    $result->posters[] = new \mm\Info\Image( 'poster', (string)$media->thumbnail['href'] );
+                }
+                elseif ( (string)$media['class'] == 'video' )
+                {
+                    if ( (int)$media->type['code'] != 31003 )
+                        continue;
+                    $trailerCode = (int)$media['code'];
+
+                    $uri = $uri = sprintf( $this->trailerURI, $trailerCode );
+                    $videoNode = $this->fetch( $uri, 'parseFromXMLToXMLWithUTF8Conversion' )->AcVisionVideo;
+                    $trailerHref = false;
+                    if ( (string)$videoNode['hd_path'] != '' )
+                        $trailerHref = (string)$videoNode['hd_path'];
+                    elseif ( (string)$videoNode['md_path'] != '' )
+                        $trailerHref = (string)$videoNode['md_path'];
+                    elseif ( (string)$videoNode['ld_path'] != '' )
+                        $trailerHref = (string)$videoNode['ld_path'];
+
+                    if ( $trailerHref !== false )
+                    {
+                        $trailerObject = new mm\Info\Trailer();
+                        $trailerObject->title = (string)$media->title;
+                        $trailerObject->url = $trailerHref;
+                        $trailerObject->language = (string)$media->version;
+                        $result->trailers[] = $trailerObject;
+                    }
                 }
             }
-        }
         }
 
         return $result;
